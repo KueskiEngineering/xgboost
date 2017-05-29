@@ -113,7 +113,7 @@ def _train_internal(params, dtrain,
 
 
 def train(params, dtrain, num_boost_round=10, evals=(), obj=None, feval=None,
-          maximize=False, early_stopping_rounds=None, evals_result=None,
+          maximize=False, early_stopping_rounds=None, updater=None, evals_result=None,
           verbose_eval=True, xgb_model=None, callbacks=None, learning_rates=None):
     # pylint: disable=too-many-statements,too-many-branches, attribute-defined-outside-init
     """Train a booster with given parameters.
@@ -196,6 +196,9 @@ def train(params, dtrain, num_boost_round=10, evals=(), obj=None, feval=None,
         warnings.warn("learning_rates parameter is deprecated - use callback API instead",
                       DeprecationWarning)
         callbacks.append(callback.reset_learning_rate(learning_rates))
+
+    if updater is not None:
+        params['updater'] = updater
 
     return _train_internal(params, dtrain,
                            num_boost_round=num_boost_round,
