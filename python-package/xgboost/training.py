@@ -176,6 +176,7 @@ def train(params, dtrain, num_boost_round=10, evals=(), obj=None, feval=None,
     -------
     booster : a trained booster model
     """
+
     callbacks = [] if callbacks is None else callbacks
 
     # Most of legacy advanced options becomes callbacks
@@ -199,6 +200,9 @@ def train(params, dtrain, num_boost_round=10, evals=(), obj=None, feval=None,
 
     if updater is not None:
         params['updater'] = updater
+
+    if learning_rates is not None:
+        params['learning_rates'] = learning_rates
 
     return _train_internal(params, dtrain,
                            num_boost_round=num_boost_round,

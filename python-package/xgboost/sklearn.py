@@ -127,7 +127,8 @@ class XGBModel(XGBModelBase):
         The value of the second derivative for each sample point
     """
 
-    def __init__(self, max_depth=3, learning_rate=0.1, n_estimators=100,
+    def __init__(self, max_depth=3, learning_rate=0.1,
+                 learning_rates=None, n_estimators=100,
                  silent=True, objective="reg:linear", booster='gbtree',
                  n_jobs=1, nthread=None, gamma=0, min_child_weight=1, max_delta_step=0,
                  subsample=1, colsample_bytree=1, colsample_bylevel=1,
@@ -137,6 +138,7 @@ class XGBModel(XGBModelBase):
             raise XGBoostError('sklearn needs to be installed in order to use this module')
         self.max_depth = max_depth
         self.learning_rate = learning_rate
+        self.learning_rates = learning_rates
         self.n_estimators = n_estimators
         self.silent = silent
         self.objective = objective
@@ -392,6 +394,7 @@ class XGBClassifier(XGBModel, XGBClassifierBase):
     """ + '\n'.join(XGBModel.__doc__.split('\n')[2:])
 
     def __init__(self, max_depth=3, learning_rate=0.1,
+                 learning_rates=None,
                  n_estimators=100, silent=True,
                  objective="binary:logistic", booster='gbtree',
                  n_jobs=1, nthread=None, gamma=0, min_child_weight=1,
@@ -399,6 +402,7 @@ class XGBClassifier(XGBModel, XGBClassifierBase):
                  reg_alpha=0, reg_lambda=1, scale_pos_weight=1,
                  base_score=0.5, random_state=0, seed=None, missing=None, **kwargs):
         super(XGBClassifier, self).__init__(max_depth, learning_rate,
+                                            learning_rates,
                                             n_estimators, silent, objective, booster,
                                             n_jobs, nthread, gamma, min_child_weight,
                                             max_delta_step, subsample,
@@ -408,7 +412,7 @@ class XGBClassifier(XGBModel, XGBClassifierBase):
                                             random_state, seed, missing, **kwargs)
 
     def fit(self, X, y, sample_weight=None, eval_set=None, eval_metric=None,
-            early_stopping_rounds=None, verbose=True, updater=None):
+            early_stopping_rounds=None, verbose=True, updater=None, learning_rates=None):
         # pylint: disable = attribute-defined-outside-init,arguments-differ
         """
         Fit gradient boosting classifier
@@ -502,7 +506,8 @@ class XGBClassifier(XGBModel, XGBClassifierBase):
                               evals=evals,
                               early_stopping_rounds=early_stopping_rounds,
                               evals_result=evals_result, obj=obj, feval=feval,
-                              verbose_eval=verbose, updater=updater)
+                              verbose_eval=verbose, updater=updater,
+                              learning_rates=learning_rates)
 
         self.objective = xgb_options["objective"]
         if evals_result:

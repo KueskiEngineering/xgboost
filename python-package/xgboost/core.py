@@ -757,7 +757,7 @@ class Booster(object):
             _check_call(_LIB.XGBoosterLoadModelFromBuffer(handle, ptr, length))
             state['handle'] = handle
         self.__dict__.update(state)
-        self.set_param({'seed': 0})
+        self.set_param({'random_state': 0})
 
     def __copy__(self):
         return self.__deepcopy__(None)
