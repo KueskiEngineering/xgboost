@@ -547,6 +547,31 @@ class XGBClassifier(XGBModel, XGBClassifierBase):
             classzero_probs = 1.0 - classone_probs
             return np.vstack((classzero_probs, classone_probs)).transpose()
 
+    def predict_margins(self, X):
+        """
+        :param X: feature dataset
+        :return:
+        """
+        booster = self.get_booster()
+        booster_dump = booster.get_dump(dump_format='json')
+        nb_trees = len(booster_dump)
+
+        margins_dict = {}
+        output_margin = True
+        margins_dict[1] = self.predict_proba(X,
+                                             output_margin=output_margin,
+                                             ntree_limit=1)[:, 1]
+        for i in range(1, nb_trees):
+            predict_margins = self.predict_proba(X,
+                                                 output_margin=output_margin,
+                                                 ntree_limit=i)[:, 1]
+            next_predict_margins = self.predict_proba(X,
+                                                      output_margin=output_margin,
+                                                      ntree_limit=(i + 1))[:, 1]
+            margins_dict[i + 1] = next_predict_margins - predict_margins
+        margins_df = pd.DataFrame(margins_dict)
+        return margins_df.transpose()
+
     def evals_result(self):
         """Return the evaluation results.
 
