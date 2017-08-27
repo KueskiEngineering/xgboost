@@ -113,7 +113,8 @@ def _train_internal(params, dtrain,
 
 
 def train(params, dtrain, num_boost_round=10, evals=(), obj=None, feval=None,
-          maximize=False, early_stopping_rounds=None, updater=None, evals_result=None,
+          maximize=False, early_stopping_rounds=None, updater=None,
+          tree_method=None, evals_result=None,
           verbose_eval=True, xgb_model=None, callbacks=None, learning_rates=None):
     # pylint: disable=too-many-statements,too-many-branches, attribute-defined-outside-init
     """Train a booster with given parameters.
@@ -200,6 +201,9 @@ def train(params, dtrain, num_boost_round=10, evals=(), obj=None, feval=None,
 
     if updater is not None:
         params['updater'] = updater
+
+    if tree_method is not None:
+        params['tree_method'] = tree_method
 
     if learning_rates is not None:
         params['learning_rates'] = learning_rates

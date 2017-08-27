@@ -413,7 +413,8 @@ class XGBClassifier(XGBModel, XGBClassifierBase):
                                             random_state, seed, missing, **kwargs)
 
     def fit(self, X, y, sample_weight=None, eval_set=None, eval_metric=None,
-            early_stopping_rounds=None, verbose=True, updater=None, learning_rates=None):
+            early_stopping_rounds=None, verbose=True, updater=None,
+            tree_method=None, learning_rates=None):
         # pylint: disable = attribute-defined-outside-init,arguments-differ
         """
         Fit gradient boosting classifier
@@ -452,6 +453,8 @@ class XGBClassifier(XGBModel, XGBClassifierBase):
             metric measured on the validation set to stderr.
         updater : string
             tree updater option
+        tree_method : string
+            tree method option
         """
         evals_result = {}
         self.classes_ = np.unique(y)
@@ -508,6 +511,7 @@ class XGBClassifier(XGBModel, XGBClassifierBase):
                               early_stopping_rounds=early_stopping_rounds,
                               evals_result=evals_result, obj=obj, feval=feval,
                               verbose_eval=verbose, updater=updater,
+                              tree_method=tree_method,
                               learning_rates=learning_rates)
 
         self.objective = xgb_options["objective"]
