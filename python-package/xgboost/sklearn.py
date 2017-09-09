@@ -4,9 +4,9 @@
 from __future__ import absolute_import
 
 import numpy as np
-import pandas as pd
 import warnings
-from .core import Booster, DMatrix, XGBoostError
+from .core import Booster, DMatrix, XGBoostError, DataFrame, PANDAS_INSTALLED
+from .core import sys
 from .training import train
 
 # Do not use class names on scikit-learn directly.
@@ -62,6 +62,11 @@ class XGBModel(XGBModelBase):
         Maximum tree depth for base learners.
     learning_rate : float
         Boosting learning rate (xgb's "eta")
+    learning_rates: list or function (deprecated - use callback API instead)
+        List of learning rate for each boosting round
+        or a customized function that calculates eta in terms of
+        current number of round and the total number of boosting round (e.g. yields
+        learning rate decay)
     n_estimators : int
         Number of boosted trees to fit.
     silent : boolean
@@ -452,9 +457,16 @@ class XGBClassifier(XGBModel, XGBClassifierBase):
             If `verbose` and an evaluation set is used, writes the evaluation
             metric measured on the validation set to stderr.
         updater : string
-            tree updater option
+            A comma separated string defining the sequence of tree updaters to run,
+            providing a modular way to construct and to modify the trees.
         tree_method : string
-            tree method option
+            The tree construction algorithm used in XGBoost,
+            options: {'auto', 'exact', 'approx', 'hist'}
+        learning_rates: list or function (deprecated - use callback API instead)
+            List of learning rate for each boosting round
+            or a customized function that calculates eta in terms of
+            current number of round and the total number of boosting round (e.g. yields
+            learning rate decay)
         """
         evals_result = {}
         self.classes_ = np.unique(y)
@@ -552,10 +564,19 @@ class XGBClassifier(XGBModel, XGBClassifierBase):
             classzero_probs = 1.0 - classone_probs
             return np.vstack((classzero_probs, classone_probs)).transpose()
 
-    def predict_margins(self, X):
-        """
-        :param X: feature dataset
-        :return:
+    def predict_margins(self, X, as_pandas=True):
+        """Return the predictor margin.
+        Parameters
+        ----------
+        X : array_like
+            Feature matrix
+        as_pandas : bool, default True
+            Return pd.DataFrame when pandas is installed.
+            If False or pandas is not installed, return dict.
+
+        Returns
+        -------
+        prediction margins
         """
         booster = self.get_booster()
         booster_dump = booster.get_dump(dump_format='json')
@@ -574,8 +595,17 @@ class XGBClassifier(XGBModel, XGBClassifierBase):
                                                       output_margin=output_margin,
                                                       ntree_limit=(i + 1))[:, 1]
             margins_dict[i + 1] = next_predict_margins - predict_margins
-        margins_df = pd.DataFrame(margins_dict)
-        return margins_df.transpose()
+        margins = margins_dict
+
+        if as_pandas and PANDAS_INSTALLED:
+            margins = DataFrame(margins_dict).transpose()
+            return margins
+        elif as_pandas and not PANDAS_INSTALLED:
+            sys.stderr.write(
+                "Returning margins as dict (as_pandas == True, but pandas is not installed).")
+            return margins
+        else:
+            return margins
 
     def evals_result(self):
         """Return the evaluation results.

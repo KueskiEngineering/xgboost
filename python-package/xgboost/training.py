@@ -113,9 +113,9 @@ def _train_internal(params, dtrain,
 
 
 def train(params, dtrain, num_boost_round=10, evals=(), obj=None, feval=None,
-          maximize=False, early_stopping_rounds=None, updater=None,
-          tree_method=None, evals_result=None,
-          verbose_eval=True, xgb_model=None, callbacks=None, learning_rates=None):
+          maximize=False, early_stopping_rounds=None, evals_result=None,
+          verbose_eval=True, xgb_model=None, callbacks=None, updater=None,
+          tree_method=None, learning_rates=None):
     # pylint: disable=too-many-statements,too-many-branches, attribute-defined-outside-init
     """Train a booster with given parameters.
 
@@ -161,6 +161,12 @@ def train(params, dtrain, num_boost_round=10, evals=(), obj=None, feval=None,
         / the boosting stage found by using `early_stopping_rounds` is also printed.
         Example: with verbose_eval=4 and at least one item in evals, an evaluation metric
         is printed every 4 boosting stages, instead of every boosting stage.
+    updater : string
+        A comma separated string defining the sequence of tree updaters to run,
+        providing a modular way to construct and to modify the trees.
+    tree_method : string
+        The tree construction algorithm used in XGBoost,
+        options: {'auto', 'exact', 'approx', 'hist'}
     learning_rates: list or function (deprecated - use callback API instead)
         List of learning rate for each boosting round
         or a customized function that calculates eta in terms of
